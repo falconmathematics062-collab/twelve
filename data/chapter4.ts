@@ -141,7 +141,20 @@ export const chapter4 = {
     },
     {
         section_title: "Miscellaneous Examples",
-        content: "Miscellaneous examples for Chapter 4.",
+        content: `
+**Chapter Summary:**
+
+1.  **Determinant**: A number (real or complex) associated with every square matrix.
+2.  **Properties**:
+    *   Value unchanged if rows/columns interchanged.
+    *   Sign changes if any two rows/columns interchanged.
+    *   Value is 0 if any two rows/columns are identical.
+3.  **Area of Triangle**: Area = 1/2 | x₁(y₂–y₃) + x₂(y₃–y₁) + x₃(y₁–y₂) |.
+4.  **Minors & Cofactors**: Used to find Adjoint.
+5.  **Adjoint**: Transpose of cofactor matrix. A(adj A) = (adj A)A = |A|I.
+6.  **Inverse**: A⁻¹ = (1/|A|) (adj A), if |A| ≠ 0.
+7.  **System of Equations**: AX = B ⇒ X = A⁻¹B (if |A| ≠ 0).
+        `,
         exercises: {
             title: "Miscellaneous Exercise on Chapter 4",
             questions: [

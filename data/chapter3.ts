@@ -97,7 +97,21 @@ export const chapter3 = {
     },
     {
       section_title: "3.7 Elementary Operation (Transformation) of a Matrix",
-      content: "There are six operations (transformations) on a matrix, three of which are due to rows and three due to columns, which are known as elementary operations or transformations."
+      content: `
+There are six operations (transformations) on a matrix, three of which are due to rows and three due to columns, which are known as elementary operations or transformations.
+
+**(i) Interchange of rows or columns:**
+The interchange of ith and jth rows is denoted by Ri ↔ Rj.
+The interchange of ith and jth columns is denoted by Ci ↔ Cj.
+
+**(ii) Multiplication by a non-zero number:**
+The multiplication of each element of the ith row by k (where k ≠ 0) is denoted by Ri → kRi.
+Similarly for columns: Ci → kCi.
+
+**(iii) Addition of multiple of another row/column:**
+The addition to the elements of ith row, the corresponding elements of jth row multiplied by k, is denoted by Ri → Ri + kRj.
+Similarly for columns: Ci → Ci + kCj.
+`
     },
     {
       section_title: "3.8 Invertible Matrices",
@@ -131,7 +145,24 @@ export const chapter3 = {
     },
     {
         section_title: "Miscellaneous Examples",
-        content: "Miscellaneous examples for Chapter 3.",
+        content: `
+**Chapter Summary:**
+
+1.  **Matrix**: An ordered rectangular array of numbers or functions.
+2.  **Order**: A matrix having m rows and n columns is of order m × n.
+3.  **Types**: Column, Row, Square, Diagonal, Scalar, Identity, Zero matrices.
+4.  **Operations**:
+    *   **Addition**: Possible if orders are same.
+    *   **Multiplication**: Possible if columns of first equals rows of second.
+5.  **Transpose (A')**: Obtained by interchanging rows and columns.
+    *   (A')' = A
+    *   (kA)' = kA'
+    *   (A + B)' = A' + B'
+    *   (AB)' = B'A'
+6.  **Symmetric**: A' = A
+7.  **Skew-symmetric**: A' = –A
+8.  **Inverse**: If AB = BA = I, then B is the inverse of A (A⁻¹).
+        `,
         exercises: {
             title: "Miscellaneous Exercise on Chapter 3",
             questions: [

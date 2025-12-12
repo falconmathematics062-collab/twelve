@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { solveTextProblemStream } from '../services/geminiService';
+import { solveTextProblemStream, explainTopicStream } from '../services/geminiService';
 import { SolutionDisplay } from './SolutionDisplay';
+import { SpinnerIcon } from './icons/SpinnerIcon';
 
 type Exercise = { id: string; text: string };
 interface ChapterPageProps {
@@ -102,9 +103,32 @@ const QuestionWithSolution: React.FC<QuestionWithSolutionProps> = ({
 export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPageProps): React.JSX.Element {
   const [activeTab, setActiveTab] = useState<Tab>('concepts');
   const [selectedSectionTitle, setSelectedSectionTitle] = useState<string | null>(null);
+  
+  // State for AI Explanations
+  const [explanations, setExplanations] = useState<Record<string, string>>({});
+  const [loadingSections, setLoadingSections] = useState<Record<string, boolean>>({});
 
   // Filter sections that have exercises
   const exerciseSections = chapter.sections.filter((s: any) => s.exercises);
+
+  const handleExplain = async (sectionTitle: string) => {
+    if (explanations[sectionTitle]) return; // Already generated
+
+    setLoadingSections(prev => ({ ...prev, [sectionTitle]: true }));
+    try {
+        const stream = explainTopicStream(sectionTitle, chapter.chapter_title);
+        let fullText = "";
+        for await (const chunk of stream) {
+            fullText += chunk;
+            setExplanations(prev => ({ ...prev, [sectionTitle]: fullText }));
+        }
+    } catch (e) {
+        console.error(e);
+        // We could handle error state here if needed
+    } finally {
+        setLoadingSections(prev => ({ ...prev, [sectionTitle]: false }));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -148,9 +172,19 @@ export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPagePr
       <div>
         {activeTab === 'concepts' && (
           <div className="prose prose-slate dark:prose-invert max-w-none">
-            {chapter.sections.map((section: any, index: number) => (
+            {chapter.sections.map((section: any, index: number) => {
+              const isExplaining = loadingSections[section.section_title];
+              const explanation = explanations[section.section_title];
+
+              return (
               <section key={index} className="py-4 border-b border-slate-200 dark:border-slate-700 last:border-b-0">
-                <h3 className="text-2xl font-semibold !mb-4 text-violet-700 dark:text-violet-300">{section.section_title}</h3>
+                <h3 
+                    className="text-2xl font-semibold !mb-4 text-violet-700 dark:text-violet-300 cursor-pointer hover:underline decoration-dashed decoration-1 underline-offset-4"
+                    onClick={() => !explanation && handleExplain(section.section_title)}
+                    title="Click to generate detailed explanation"
+                >
+                    {section.section_title}
+                </h3>
                 <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -193,8 +227,56 @@ export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPagePr
                     </div>
                   </div>
                 ))}
+
+                {/* AI Explanation Section */}
+                <div className="mt-6">
+                    {!explanation && !isExplaining && (
+                        <button 
+                            onClick={() => handleExplain(section.section_title)}
+                            className="flex items-center gap-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors border border-indigo-200 dark:border-indigo-800 shadow-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+                                <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM9 15a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-1.5h-1.5a.75.75 0 010-1.5h1.5v-1.5A.75.75 0 019 15z" clipRule="evenodd" />
+                            </svg>
+                            Generate Detailed Explanation & Examples
+                        </button>
+                    )}
+
+                    {isExplaining && (
+                        <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg">
+                            <SpinnerIcon />
+                            <span className="text-indigo-700 dark:text-indigo-300 text-sm animate-pulse">Generating detailed explanation for {section.section_title}...</span>
+                        </div>
+                    )}
+
+                    {explanation && (
+                        <div className="mt-4 p-6 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl relative overflow-hidden">
+                            <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">AI Generated</span>
+                                <h4 className="text-lg font-bold text-indigo-900 dark:text-indigo-200 m-0">Detailed Explanation</h4>
+                            </div>
+                            <ReactMarkdown 
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    // Custom styling for AI content to make it distinct
+                                    h1: ({node, ...props}) => <h3 className="text-indigo-800 dark:text-indigo-300 font-bold text-xl mt-4 mb-2" {...props} />,
+                                    h2: ({node, ...props}) => <h4 className="text-indigo-700 dark:text-indigo-400 font-bold text-lg mt-3 mb-2" {...props} />,
+                                    h3: ({node, ...props}) => <h5 className="text-indigo-600 dark:text-indigo-400 font-bold text-base mt-2 mb-1" {...props} />,
+                                    strong: ({node, ...props}) => <strong className="text-indigo-900 dark:text-indigo-100 font-bold" {...props} />,
+                                    ul: ({node, ...props}) => <ul className="list-disc pl-5 my-2 space-y-1 text-slate-700 dark:text-slate-300" {...props} />,
+                                    ol: ({node, ...props}) => <ol className="list-decimal pl-5 my-2 space-y-1 text-slate-700 dark:text-slate-300" {...props} />,
+                                    p: ({node, ...props}) => <p className="mb-3 text-slate-700 dark:text-slate-300 leading-relaxed" {...props} />,
+                                }}
+                            >
+                                {explanation}
+                            </ReactMarkdown>
+                        </div>
+                    )}
+                </div>
               </section>
-            ))}
+            );
+            })}
           </div>
         )}
 

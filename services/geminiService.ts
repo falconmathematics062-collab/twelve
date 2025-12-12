@@ -276,6 +276,45 @@ export async function* getHintStream(
     }
 }
 
+export async function* explainTopicStream(topic: string, chapterTitle: string): AsyncGenerator<string> {
+  const model = "gemini-2.5-flash";
+  const prompt = `
+    You are an expert PUC (Class 12) Mathematics tutor.
+    The user wants a detailed explanation of the topic: "${topic}" from the chapter "${chapterTitle}".
+
+    Your Task:
+    1.  **Definition**: Provide a clear, mathematical definition of the concept.
+    2.  **Explanation**: Explain the concept simply but thoroughly, as if teaching a student who is seeing it for the first time.
+    3.  **Key Properties/Formulas**: List any important formulas or properties associated with this topic.
+    4.  **Examples**: Provide 2 distinct, solved examples to illustrate the concept.
+
+    Guidelines:
+    - Use Markdown for formatting. Use Bold and Headings to structure the response.
+    - **Do NOT use LaTeX.** Use standard Unicode characters for math (e.g., √, ∫, π, θ, x², a₁, ∈).
+    - Be precise and strictly follow the NCERT curriculum level.
+  `;
+
+  try {
+    const responseStream = await ai.models.generateContentStream({
+        model: model,
+        contents: prompt,
+        config: {
+            thinkingConfig: { thinkingBudget: 0 }
+        }
+    });
+
+    for await (const chunk of responseStream) {
+        const text = chunk.text;
+        if (text) {
+            yield text;
+        }
+    }
+  } catch (error) {
+    console.error("Error explaining topic:", error);
+    throw new Error("Could not generate explanation.");
+  }
+}
+
 export async function* generateFormulaSheetStream(chapterTitle: string): AsyncGenerator<string> {
   const model = "gemini-2.5-flash";
   let prompt = "";
