@@ -1,0 +1,7 @@
+{
+  "name": "deploy 12",
+  "description": "A textbook-based learning web app for 1st and 2nd PUC (Class 11 & 12) mathematics students, with chapter browsing and step-by-step solutions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
