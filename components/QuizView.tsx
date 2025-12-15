@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { generateGameContent, GameType, QuizQuestion, TrueFalseQuestion, MatchPair, FixBrokenGame, PredictNextGame, DerivationGame } from '../services/geminiService';
+import { generateGameContent, GameType, QuizQuestion, TrueFalseQuestion, MatchPair, FixBrokenGameData, PredictNextGameData, DerivationGameData } from '../services/geminiService';
 import { SpinnerIcon } from './icons/SpinnerIcon';
 import { QuizIcon } from './icons/QuizIcon';
 
@@ -278,7 +278,7 @@ const MCQGame = ({ data, onFinish }: { data: QuizQuestion[], onFinish: () => voi
     );
 };
 
-const FixBrokenGame = ({ data, onFinish }: { data: FixBrokenGame[], onFinish: () => void }) => {
+const FixBrokenGame = ({ data, onFinish }: { data: FixBrokenGameData[], onFinish: () => void }) => {
     const [index, setIndex] = useState(0);
     const [solved, setSolved] = useState(false);
     const [feedback, setFeedback] = useState<{correct: boolean, text: string} | null>(null);
@@ -344,7 +344,7 @@ const FixBrokenGame = ({ data, onFinish }: { data: FixBrokenGame[], onFinish: ()
     );
 };
 
-const PredictNextGame = ({ data, onFinish }: { data: PredictNextGame[], onFinish: () => void }) => {
+const PredictNextGame = ({ data, onFinish }: { data: PredictNextGameData[], onFinish: () => void }) => {
     const [index, setIndex] = useState(0);
     const [solved, setSolved] = useState(false);
     const [selectedOption, setSelectedOption] = useState<number | null>(null);
@@ -415,7 +415,7 @@ const PredictNextGame = ({ data, onFinish }: { data: PredictNextGame[], onFinish
     );
 };
 
-const DerivationGame = ({ data, onFinish }: { data: DerivationGame[], onFinish: () => void }) => {
+const DerivationGame = ({ data, onFinish }: { data: DerivationGameData[], onFinish: () => void }) => {
     const [index, setIndex] = useState(0);
     const [shuffledSteps, setShuffledSteps] = useState<string[]>([]);
     const [isCorrect, setIsCorrect] = useState(false);

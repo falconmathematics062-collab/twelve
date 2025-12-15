@@ -457,7 +457,7 @@ export type MatchPair = {
   right: string;
 };
 
-export type FixBrokenGame = {
+export type FixBrokenGameData = {
     id: number;
     problem: string;
     steps: {
@@ -469,7 +469,7 @@ export type FixBrokenGame = {
     finalAnswer: string;
 };
 
-export type PredictNextGame = {
+export type PredictNextGameData = {
     id: number;
     problem: string;
     givenSteps: string[];
@@ -478,7 +478,7 @@ export type PredictNextGame = {
     explanation: string;
 };
 
-export type DerivationGame = {
+export type DerivationGameData = {
     id: number;
     title: string;
     steps: string[];
