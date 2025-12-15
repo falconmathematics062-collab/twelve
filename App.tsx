@@ -8,10 +8,12 @@ import { QuestionInput } from './components/QuestionInput';
 import { CustomSolutionView } from './components/CustomSolutionView';
 import { QuizView } from './components/QuizView';
 import { FormulaView } from './components/FormulaView';
+import { PreviousYearsView } from './components/PreviousYearsView';
 import { MenuIcon } from './components/icons/MenuIcon';
 import { BookIcon } from './components/icons/BookIcon';
 import { QuizIcon } from './components/icons/QuizIcon';
 import { FormulaIcon } from './components/icons/FormulaIcon';
+import { ClockIcon } from './components/icons/ClockIcon';
 import { FloatingSymbolsBackground } from './components/FloatingSymbolsBackground';
 import { chapter1 } from './data/chapter1';
 import { chapter2 } from './data/chapter2';
@@ -56,8 +58,8 @@ const textbooksForFormulas = {
 };
 
 
-type Tab = 'learn' | 'quiz' | 'formulas';
-type View = 'home' | 'chapter' | 'exercise' | 'custom-solution' | 'quiz-home' | 'quiz-taking' | 'formulas-home' | 'formulas-view';
+type Tab = 'learn' | 'quiz' | 'formulas' | 'previous-years';
+type View = 'home' | 'chapter' | 'exercise' | 'custom-solution' | 'quiz-home' | 'quiz-taking' | 'formulas-home' | 'formulas-view' | 'previous-years-home' | 'previous-years-view';
 type Chapter = typeof chapter1;
 type Exercise = { id: string; text: string; sectionTitle: string };
 
@@ -76,6 +78,8 @@ function App(): React.JSX.Element {
       setView('home');
     } else if (tab === 'formulas') {
       setView('formulas-home');
+    } else if (tab === 'previous-years') {
+      setView('previous-years-home');
     } else {
       setView('quiz-home');
     }
@@ -95,6 +99,11 @@ function App(): React.JSX.Element {
     setSelectedChapter(chapter);
     setView('formulas-view');
   };
+
+  const handlePreviousYearsChapterSelect = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    setView('previous-years-view');
+  };
   
   const handleExerciseSelect = (chapter: Chapter, exercise: Exercise) => {
     setSelectedExercise({ chapter, exercise });
@@ -107,6 +116,8 @@ function App(): React.JSX.Element {
         setCustomProblem(null);
     } else if (activeTab === 'formulas') {
         setView('formulas-home');
+    } else if (activeTab === 'previous-years') {
+        setView('previous-years-home');
     } else {
         setView('quiz-home');
     }
@@ -128,9 +139,9 @@ function App(): React.JSX.Element {
     // Logic for Quiz Tab
     if (activeTab === 'quiz') {
       if (view === 'quiz-taking' && selectedChapter) {
-        return <QuizView chapterTitle={selectedChapter.chapter_title} onBack={goHome} />;
+        return <QuizView chapter={selectedChapter} onBack={goHome} />;
       }
-      return <HomePage textbooks={textbooks} onChapterSelect={handleQuizChapterSelect} title="Select a Topic for Quiz" buttonText="Start Quiz" />;
+      return <HomePage textbooks={textbooks} onChapterSelect={handleQuizChapterSelect} title="Select a Topic for Games" buttonText="Start Game" />;
     }
 
     // Logic for Formulas Tab
@@ -139,6 +150,14 @@ function App(): React.JSX.Element {
         return <FormulaView chapterTitle={selectedChapter.chapter_title} onBack={goHome} />;
       }
       return <HomePage textbooks={textbooksForFormulas} onChapterSelect={handleFormulaChapterSelect} title="Select a Chapter for Formulas" buttonText="View Formulas" />;
+    }
+
+    // Logic for Previous Years Tab
+    if (activeTab === 'previous-years') {
+      if (view === 'previous-years-view' && selectedChapter) {
+        return <PreviousYearsView chapterTitle={selectedChapter.chapter_title} onBack={goHome} />;
+      }
+      return <HomePage textbooks={textbooks} onChapterSelect={handlePreviousYearsChapterSelect} title="Select Chapter for Previous Year Qs" buttonText="View Questions" />;
     }
 
     // Logic for Learn Tab
@@ -188,7 +207,7 @@ function App(): React.JSX.Element {
               </button>
 
               {isMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 origin-top-right animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 origin-top-right animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="py-1">
                     <button 
                       onClick={() => handleTabChange('learn')} 
@@ -205,11 +224,18 @@ function App(): React.JSX.Element {
                       Formulas
                     </button>
                     <button 
+                      onClick={() => handleTabChange('previous-years')} 
+                      className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${activeTab === 'previous-years' ? 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20' : 'text-slate-700 dark:text-slate-200'}`}
+                    >
+                      <ClockIcon className="w-5 h-5" />
+                      Previous Year Question Paper
+                    </button>
+                    <button 
                       onClick={() => handleTabChange('quiz')} 
                       className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors ${activeTab === 'quiz' ? 'text-purple-600 dark:text-purple-400 font-bold bg-purple-50 dark:bg-purple-900/20' : 'text-slate-700 dark:text-slate-200'}`}
                     >
                       <QuizIcon className="w-5 h-5" />
-                      Quiz
+                      Games & Quiz
                     </button>
                   </div>
                 </div>

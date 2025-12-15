@@ -30,19 +30,18 @@ const QuestionWithSolution: React.FC<QuestionWithSolutionProps> = ({
   index 
 }) => {
   const [solution, setSolution] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
+  const handleShowSolution = async () => {
+    setIsExpanded(true);
+    if (solution) return; // Already fetched
 
-    const fetchSolution = async () => {
-      // Stagger the requests to prevent hitting API rate limits (1 second per index)
-      await new Promise(resolve => setTimeout(resolve, index * 800));
-      
-      if (!isMounted) return;
+    setIsLoading(true);
+    setError('');
 
-      try {
+    try {
         const chapterContext = {
           number: chapter.chapter_number,
           title: chapter.chapter_title,
@@ -57,43 +56,63 @@ const QuestionWithSolution: React.FC<QuestionWithSolutionProps> = ({
         const stream = solveTextProblemStream(exerciseData, chapterContext);
         
         for await (const chunk of stream) {
-          if (!isMounted) break;
           setSolution(prev => prev + chunk);
-          // Once we have some data, we can stop the loading spinner, or let SolutionDisplay handle it
-          // SolutionDisplay hides spinner if solution is not empty.
         }
         
       } catch (e) {
-        if (isMounted) {
           if (e instanceof Error) {
             setError(e.message);
           } else {
             setError('An unknown error occurred.');
           }
-        }
       } finally {
-        if (isMounted) {
           setIsLoading(false);
-        }
       }
-    };
-
-    fetchSolution();
-
-    return () => { isMounted = false; };
-  }, [question, sectionTitle, chapter, index]);
+  };
 
   return (
-    <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+    <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 transition-all duration-300">
       <div className="flex flex-col gap-4">
         <div className="prose prose-slate dark:prose-invert max-w-none border-b border-slate-100 dark:border-slate-700 pb-4 mb-2">
            <ReactMarkdown remarkPlugins={[remarkGfm]}>
              {`**Q${question.id}.** ${question.text}`}
            </ReactMarkdown>
         </div>
+        
         <div className="mt-2">
-            <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Solution</h4>
-            <SolutionDisplay isLoading={isLoading && !solution} solution={solution} error={error} />
+            {!isExpanded ? (
+                <button 
+                    onClick={handleShowSolution}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-sm shadow-md"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" />
+                        <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 010-1.186A10.004 10.004 0 0110 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0110 17c-4.257 0-7.893-2.66-9.336-6.41zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                    </svg>
+                    View Step-by-Step Solution
+                </button>
+            ) : (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <span>Solution</span>
+                    </h4>
+                    <SolutionDisplay isLoading={isLoading && !solution} solution={solution} error={error} />
+                    
+                    {(solution || error) && (
+                        <div className="mt-4 flex justify-end">
+                             <button 
+                                onClick={() => setIsExpanded(false)}
+                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                                    <path fillRule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clipRule="evenodd" />
+                                </svg>
+                                Hide Step-by-Step Solution
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
       </div>
     </div>
@@ -181,7 +200,7 @@ export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPagePr
                 <h3 
                     className="text-2xl font-semibold !mb-4 text-violet-700 dark:text-violet-300 cursor-pointer hover:underline decoration-dashed decoration-1 underline-offset-4"
                     onClick={() => !explanation && handleExplain(section.section_title)}
-                    title="Click to generate detailed explanation"
+                    title="Click to generate concise explanation"
                 >
                     {section.section_title}
                 </h3>
@@ -238,14 +257,14 @@ export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPagePr
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
                                 <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813a3.75 3.75 0 002.576-2.576l.813-2.846A.75.75 0 019 4.5zM9 15a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-1.5h-1.5a.75.75 0 010-1.5h1.5v-1.5A.75.75 0 019 15z" clipRule="evenodd" />
                             </svg>
-                            Generate Detailed Explanation & Examples
+                            Generate Explanation & Example
                         </button>
                     )}
 
                     {isExplaining && (
                         <div className="flex items-center gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-lg">
                             <SpinnerIcon />
-                            <span className="text-indigo-700 dark:text-indigo-300 text-sm animate-pulse">Generating detailed explanation for {section.section_title}...</span>
+                            <span className="text-indigo-700 dark:text-indigo-300 text-sm animate-pulse">Generating explanation for {section.section_title}...</span>
                         </div>
                     )}
 
@@ -254,7 +273,7 @@ export function ChapterPage({ chapter, onBack, onExerciseSelect }: ChapterPagePr
                             <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
                             <div className="flex items-center gap-2 mb-4">
                                 <span className="bg-indigo-100 dark:bg-indigo-800 text-indigo-700 dark:text-indigo-200 text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">AI Generated</span>
-                                <h4 className="text-lg font-bold text-indigo-900 dark:text-indigo-200 m-0">Detailed Explanation</h4>
+                                <h4 className="text-lg font-bold text-indigo-900 dark:text-indigo-200 m-0">Explanation</h4>
                             </div>
                             <ReactMarkdown 
                                 remarkPlugins={[remarkGfm]}

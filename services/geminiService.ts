@@ -1,5 +1,5 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, Schema } from "@google/genai";
 
 // Assume API_KEY is set in the environment.
 const API_KEY = process.env.API_KEY;
@@ -280,18 +280,18 @@ export async function* explainTopicStream(topic: string, chapterTitle: string): 
   const model = "gemini-2.5-flash";
   const prompt = `
     You are an expert PUC (Class 12) Mathematics tutor.
-    The user wants a detailed explanation of the topic: "${topic}" from the chapter "${chapterTitle}".
+    The user wants a very concise explanation of the topic: "${topic}" from the chapter "${chapterTitle}".
 
     Your Task:
-    1.  **Definition**: Provide a clear, mathematical definition of the concept.
-    2.  **Explanation**: Explain the concept simply but thoroughly, as if teaching a student who is seeing it for the first time.
-    3.  **Key Properties/Formulas**: List any important formulas or properties associated with this topic.
-    4.  **Examples**: Provide 2 distinct, solved examples to illustrate the concept.
+    1.  **Concise Definition**: Provide a one-line explanation/definition of the concept.
+    2.  **Key Points**: Provide 1 or 2 brief bullet points explaining the core concept.
+    3.  **One Example**: Provide exactly ONE simple, solved example to illustrate the concept.
 
     Guidelines:
-    - Use Markdown for formatting. Use Bold and Headings to structure the response.
+    - Keep it short and concise. Do not give long paragraphs.
+    - Use Markdown for formatting.
     - **Do NOT use LaTeX.** Use standard Unicode characters for math (e.g., √, ∫, π, θ, x², a₁, ∈).
-    - Be precise and strictly follow the NCERT curriculum level.
+    - Strictly follow the NCERT curriculum level.
   `;
 
   try {
@@ -383,6 +383,59 @@ export async function* generateFormulaSheetStream(chapterTitle: string): AsyncGe
   }
 }
 
+export async function* getPreviousYearQuestionsStream(chapterTitle: string): AsyncGenerator<string> {
+  const model = "gemini-2.5-flash";
+  const prompt = `
+    You are an expert Karnataka State Board (PUC) Mathematics teacher.
+    The student wants previous year board exam questions for the chapter: "${chapterTitle}".
+
+    Your Task:
+    Provide a collection of questions that have appeared in the Karnataka 2nd PUC Board exams for this specific chapter in the last 3-5 years (e.g., 2024, 2023, 2022, 2020).
+
+    Formatting Requirements:
+    1.  **Group by Marks/Section**: Organize the questions by their marks or section (typical 2nd PUC pattern).
+        - **Part A (1 Mark / MCQ)**
+        - **Part B (2 Marks)**
+        - **Part C (3 Marks)**
+        - **Part D (5 Marks)**
+        - **Part E (4/6 Marks)** (if applicable for this chapter)
+    
+    2.  **Year Tagging**: For EACH question, append the Year and Exam Month in bold brackets at the end of the question text. 
+        - Example: "Define a bijective function. **[March 2023]**"
+        - Example: "Find the integral of sin(x). **[July 2022]**"
+    
+    3.  **No Solutions**: Only list the questions. Do not provide answers or solutions.
+    
+    4.  **Math Format**: **Do NOT use LaTeX.** Use standard Unicode text characters for mathematical symbols (e.g., x², ∫, √, π, θ, A⁻¹).
+    
+    5.  **Authenticity**: Ensure the questions are typical of the Karnataka PUC board pattern for this chapter.
+  `;
+
+  try {
+    const responseStream = await ai.models.generateContentStream({
+      model: model,
+      contents: prompt,
+      config: {
+        thinkingConfig: { thinkingBudget: 0 }
+      }
+    });
+
+    for await (const chunk of responseStream) {
+      const text = chunk.text;
+      if (text) {
+        yield text;
+      }
+    }
+  } catch (error) {
+    console.error("Error generating previous year questions:", error);
+    throw new Error("Could not generate previous year questions.");
+  }
+}
+
+// ---- GAME BASED LEARNING ENGINE ----
+
+export type GameType = 'mcq' | 'true_false' | 'match' | 'fix_broken' | 'predict_next' | 'strategy' | 'derivation';
+
 export type QuizQuestion = {
   id: number;
   question: string;
@@ -391,49 +444,263 @@ export type QuizQuestion = {
   explanation: string;
 };
 
-export async function generateQuiz(chapterTitle: string): Promise<QuizQuestion[]> {
+export type TrueFalseQuestion = {
+  id: number;
+  statement: string;
+  isTrue: boolean;
+  explanation: string;
+};
+
+export type MatchPair = {
+  id: number;
+  left: string;
+  right: string;
+};
+
+export type FixBrokenGame = {
+    id: number;
+    problem: string;
+    steps: {
+        id: number;
+        text: string;
+        isIncorrect: boolean;
+        correction?: string;
+    }[];
+    finalAnswer: string;
+};
+
+export type PredictNextGame = {
+    id: number;
+    problem: string;
+    givenSteps: string[];
+    options: string[];
+    correctOption: number;
+    explanation: string;
+};
+
+export type DerivationGame = {
+    id: number;
+    title: string;
+    steps: string[];
+};
+
+export async function generateGameContent(chapter: any, gameType: GameType): Promise<any> {
   const model = "gemini-2.5-flash";
-  const prompt = `
-    Generate 10 multiple choice questions for the 2nd PUC (Class 12) Mathematics chapter: "${chapterTitle}".
-    Target level: Intermediate (suitable for board exams and KCET).
+  
+  let contextText = `Chapter: ${chapter.chapter_number} - ${chapter.chapter_title}.\n`;
+  if (chapter.sections) {
+      chapter.sections.forEach((sec: any) => {
+          contextText += `Section: ${sec.section_title}\n${sec.content}\n`;
+          if (sec.definitions) {
+              sec.definitions.forEach((def: any) => contextText += `Def: ${def.title} - ${def.text}\n`);
+          }
+      });
+  }
+
+  // Common instructions for the Game Engine
+  const basePrompt = `
+    ROLE & PURPOSE:
+    You are the Advanced Game & Competitive Learning Engine for a 1st & 2nd PUC Mathematics app.
+    Your job is to convert the provided textbook content into a smart, educational game.
     
-    Important: Do NOT use LaTeX. Use simple unicode text for math (e.g., x^2, theta, pi, sqrt).
+    STRICT RULES (NO INVENTING CONTENT):
+    1. You must NOT create new problems or use outside numbers/variables not typical of the textbook.
+    2. All questions/pairs/cards must come ONLY from the provided Chapter Content.
+    3. Preserve mathematical accuracy and notation (Use Unicode, NO LaTeX).
+    4. Do not ask questions about topics not present in the provided text.
+    5. No JEE/NEET level tricks. Stick to Board Exam level.
+    
+    CHAPTER CONTENT:
+    ${contextText.substring(0, 15000)} 
   `;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: model,
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
+  let specificPrompt = "";
+  let responseSchema: Schema | undefined = undefined;
+
+  if (gameType === 'mcq') {
+      specificPrompt = `
+        Create 5 Multiple Choice Questions (MCQs) based on the chapter.
+        - Questions must be based on textbook logic, values, and concepts.
+        - Include an explanation for the correct answer.
+        - Options should be distinct.
+      `;
+      responseSchema = {
           type: Type.ARRAY,
           items: {
             type: Type.OBJECT,
             properties: {
               id: { type: Type.INTEGER },
               question: { type: Type.STRING },
-              options: {
-                type: Type.ARRAY,
-                items: { type: Type.STRING }
-              },
-              correctAnswer: { type: Type.INTEGER },
+              options: { type: Type.ARRAY, items: { type: Type.STRING } },
+              correctAnswer: { type: Type.INTEGER, description: "Index of correct option (0-3)" },
               explanation: { type: Type.STRING }
             },
             required: ["id", "question", "options", "correctAnswer", "explanation"]
           }
-        },
+      };
+  } else if (gameType === 'true_false') {
+      specificPrompt = `
+        Create 10 True or False questions.
+        - Statements must be directly based on textbook concepts/theorems.
+        - Example: "The derivative of a constant is zero."
+        - Provide an explanation from the text.
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.INTEGER },
+              statement: { type: Type.STRING },
+              isTrue: { type: Type.BOOLEAN },
+              explanation: { type: Type.STRING }
+            },
+            required: ["id", "statement", "isTrue", "explanation"]
+          }
+      };
+  } else if (gameType === 'match') {
+      specificPrompt = `
+        Create 5 Pairs for a Match-the-Following game.
+        - Pairs can be: Definition ↔ Term, Formula ↔ Symbol, Theorem ↔ Statement.
+        - Ensure clear 1-to-1 mapping.
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.INTEGER },
+              left: { type: Type.STRING },
+              right: { type: Type.STRING }
+            },
+            required: ["id", "left", "right"]
+          }
+      };
+  } else if (gameType === 'fix_broken') {
+      specificPrompt = `
+        Create 3 "Fix the Broken Solution" challenges.
+        For each challenge:
+        1. Pick a textbook problem.
+        2. Solve it in 3-5 steps.
+        3. INTENTIONALLY break ONE step (e.g. wrong sign, wrong formula, missed term).
+        4. Mark which step is incorrect and provide the correction.
+        5. Provide the final correct answer.
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+              type: Type.OBJECT,
+              properties: {
+                  id: { type: Type.INTEGER },
+                  problem: { type: Type.STRING },
+                  steps: {
+                      type: Type.ARRAY,
+                      items: {
+                          type: Type.OBJECT,
+                          properties: {
+                              id: { type: Type.INTEGER },
+                              text: { type: Type.STRING },
+                              isIncorrect: { type: Type.BOOLEAN },
+                              correction: { type: Type.STRING }
+                          },
+                          required: ["id", "text", "isIncorrect"]
+                      }
+                  },
+                  finalAnswer: { type: Type.STRING }
+              },
+              required: ["id", "problem", "steps", "finalAnswer"]
+          }
+      };
+  } else if (gameType === 'predict_next') {
+      specificPrompt = `
+        Create 3 "Predict the Next Step" challenges.
+        For each challenge:
+        1. Pick a textbook problem.
+        2. Show the first 1 or 2 steps (givenSteps).
+        3. Ask "What is the next step?".
+        4. Provide 4 options for the next step: 1 correct, 3 incorrect but plausible distractors.
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+              type: Type.OBJECT,
+              properties: {
+                  id: { type: Type.INTEGER },
+                  problem: { type: Type.STRING },
+                  givenSteps: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  options: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  correctOption: { type: Type.INTEGER, description: "Index of correct option (0-3)" },
+                  explanation: { type: Type.STRING }
+              },
+              required: ["id", "problem", "givenSteps", "options", "correctOption", "explanation"]
+          }
+      };
+  } else if (gameType === 'strategy') {
+      specificPrompt = `
+        Create 5 "Choose Your Strategy" challenges.
+        1. Pick a problem that requires a specific method (e.g. Substitution, Parts, Product Rule, etc.).
+        2. Ask "Which method is best to solve this?".
+        3. Provide 4 method options.
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+              type: Type.OBJECT,
+              properties: {
+                  id: { type: Type.INTEGER },
+                  question: { type: Type.STRING, description: "The math problem" },
+                  options: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of methods" },
+                  correctAnswer: { type: Type.INTEGER },
+                  explanation: { type: Type.STRING }
+              },
+              required: ["id", "question", "options", "correctAnswer", "explanation"]
+          }
+      };
+  } else if (gameType === 'derivation') {
+      specificPrompt = `
+        Create 2 "Derivation Rebuild" games.
+        1. Pick a standard derivation or multi-step proof from the chapter.
+        2. List the steps in the CORRECT order.
+        (The game UI will shuffle them).
+      `;
+      responseSchema = {
+          type: Type.ARRAY,
+          items: {
+              type: Type.OBJECT,
+              properties: {
+                  id: { type: Type.INTEGER },
+                  title: { type: Type.STRING, description: "Name of derivation/proof" },
+                  steps: { type: Type.ARRAY, items: { type: Type.STRING } }
+              },
+              required: ["id", "title", "steps"]
+          }
+      };
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: basePrompt + "\n" + specificPrompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: responseSchema,
         thinkingConfig: { thinkingBudget: 0 }
       }
     });
 
     const text = response.text;
     if (!text) return [];
-    
-    const parsed = JSON.parse(text);
-    return Array.isArray(parsed) ? parsed : [];
+    return JSON.parse(text);
   } catch (e) {
-    console.error("Error generating quiz:", e);
+    console.error("Error generating game content:", e);
     return [];
   }
+}
+
+// Deprecated in favor of generic generateGameContent, but kept for compatibility if needed elsewhere
+export async function generateQuiz(chapterTitle: string): Promise<QuizQuestion[]> {
+    // This is now a wrapper around the new engine, assuming we don't have full content passed
+    // For now, we will just return empty or error, but the UI should use generateGameContent
+    // Or we can mock a chapter object with just the title.
+    return generateGameContent({ chapter_title: chapterTitle, chapter_number: "", sections: [] }, 'mcq');
 }
