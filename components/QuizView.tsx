@@ -113,7 +113,7 @@ const MCQGame = ({ data, onFinish, type = 'quiz' }: { data: any[], onFinish: () 
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
                 <div className="mb-6">
                     <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">{type === 'strategy' ? 'Choose Best Method' : `Question ${index + 1}`}</span>
-                    <MarkdownContent content={q.question} className="text-lg font-bold mt-1" />
+                    <MarkdownContent content={q.question || q.statement} className="text-lg font-bold mt-1" />
                 </div>
                 <div className="space-y-3">
                     {q.options.map((opt: string, i: number) => (
@@ -180,7 +180,7 @@ const DerivationGame = ({ data, onFinish }: { data: any[], onFinish: () => void 
             <div className="text-center">
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Rebuild the Derivation</span>
                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mt-1">{data[index].title}</h3>
-                <p className="text-sm text-slate-500 mt-2">Arrange the steps in the correct logical sequence.</p>
+                <p className="text-sm text-slate-500 mt-2">Use the arrows to arrange the steps in logical sequence.</p>
             </div>
             
             <div className="space-y-3">
@@ -188,10 +188,10 @@ const DerivationGame = ({ data, onFinish }: { data: any[], onFinish: () => void 
                     <div key={i} className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${isCorrect ? 'bg-green-50 border-green-500' : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 shadow-sm'}`}>
                         {!isCorrect && (
                             <div className="flex flex-col gap-1">
-                                <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 hover:text-blue-500 disabled:opacity-20">
+                                <button onClick={() => move(i, -1)} disabled={i === 0} className="p-2 bg-slate-100 dark:bg-slate-700 rounded hover:text-blue-500 disabled:opacity-20 transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" /></svg>
                                 </button>
-                                <button onClick={() => move(i, 1)} disabled={i === shuffledSteps.length - 1} className="p-1 hover:text-blue-500 disabled:opacity-20">
+                                <button onClick={() => move(i, 1)} disabled={i === shuffledSteps.length - 1} className="p-2 bg-slate-100 dark:bg-slate-700 rounded hover:text-blue-500 disabled:opacity-20 transition-colors">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" /></svg>
                                 </button>
                             </div>
@@ -219,9 +219,6 @@ const DerivationGame = ({ data, onFinish }: { data: any[], onFinish: () => void 
         </div>
     );
 };
-
-// ... TrueFalse, Match, FixBroken, PredictNext components logic simplified for text-math ...
-// (Already handled in service update)
 
 export function QuizView({ chapter, onBack }: QuizViewProps): React.JSX.Element {
   const [gameMode, setGameMode] = useState<GameType | null>(null);

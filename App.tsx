@@ -167,7 +167,7 @@ function App(): React.JSX.Element {
       case 'exercise':
         return selectedExercise ? <ExerciseView chapter={selectedExercise.chapter} exercise={selectedExercise.exercise} onBack={backToChapter} /> : <HomePage textbooks={textbooks} onChapterSelect={handleChapterSelect} />;
       case 'chapter':
-        return selectedChapter ? <ChapterPage chapter={selectedChapter} onBack={goHome} onExerciseSelect={(exercise) => handleExerciseSelect(selectedChapter, exercise)} /> : <HomePage textbooks={textbooks} onChapterSelect={handleChapterSelect} />;
+        return selectedChapter ? <ChapterPage chapter={selectedChapter} onBack={goHome} onExerciseSelect={(exercise: Exercise) => handleExerciseSelect(selectedChapter, exercise)} /> : <HomePage textbooks={textbooks} onChapterSelect={handleChapterSelect} />;
       case 'home':
       default:
         return <HomePage textbooks={textbooks} onChapterSelect={handleChapterSelect} />;
