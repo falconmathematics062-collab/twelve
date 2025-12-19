@@ -47,6 +47,40 @@
       .animate-shake {
         animation: shake 0.2s ease-in-out 0s 2;
       }
+
+      /* Subtle geometric background for SolutionDisplay (the "stars" / texture effect) */
+      .geometric-background {
+        background-image: radial-gradient(circle at 100% 150%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 14%,transparent 14%, transparent 100%),
+                          radial-gradient(circle at 0% 150%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 7%,transparent 7%, transparent 100%),
+                          radial-gradient(circle at 100% 50%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 23%,transparent 23%, transparent 100%),
+                          radial-gradient(circle at 0% 50%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 10%,transparent 10%, transparent 100%),
+                          radial-gradient(circle at 100% 0%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 17%,transparent 17%, transparent 100%),
+                          radial-gradient(circle at 0% 0%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 10%,transparent 10%, transparent 100%),
+                          radial-gradient(circle at 50% 100%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 5%,transparent 5%, transparent 100%),
+                          radial-gradient(circle at 50% 0%, rgba(100, 116, 139, 0.03) 0%, rgba(100, 116, 139, 0.03) 12%,transparent 12%, transparent 100%);
+        background-size: 100px 100px;
+      }
+      .dark .geometric-background {
+        background-image: radial-gradient(circle at 100% 150%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 14%,transparent 14%, transparent 100%),
+                          radial-gradient(circle at 0% 150%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 7%,transparent 7%, transparent 100%),
+                          radial-gradient(circle at 100% 50%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 23%,transparent 23%, transparent 100%),
+                          radial-gradient(circle at 0% 50%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 10%,transparent 10%, transparent 100%),
+                          radial-gradient(circle at 100% 0%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 17%,transparent 17%, transparent 100%),
+                          radial-gradient(circle at 0% 0%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 10%,transparent 10%, transparent 100%),
+                          radial-gradient(circle at 50% 100%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 5%,transparent 5%, transparent 100%),
+                          radial-gradient(circle at 50% 0%, rgba(203, 213, 225, 0.03) 0%, rgba(203, 213, 225, 0.03) 12%,transparent 12%, transparent 100%);
+      }
+
+      /* Custom glow effect for exercise cards */
+      .exercise-card {
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Default subtle shadow */
+      }
+      .exercise-card:hover {
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2); /* Blue glow (light mode) */
+      }
+      .dark .exercise-card:hover {
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2); /* Blue glow for dark mode */
+      }
     </style>
   <script type="importmap">
 {

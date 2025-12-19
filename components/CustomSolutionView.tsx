@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SolutionDisplay } from './SolutionDisplay';
 import { solveCustomProblemStream, getHintStream } from '../services/geminiService';
+import { QuestionTextContent } from './QuestionTextContent'; // New import
 
 interface CustomSolutionViewProps {
   text: string;
@@ -32,12 +33,6 @@ export function CustomSolutionView({ text, imageFile, mode, onBack }: CustomSolu
   // Current app auto-solves on load. 
   // Modified behavior: If mode is 'mistake', we might still want auto-solve. 
   // If mode is 'solve', user might want hints first. 
-  // Let's keep auto-solve for 'solve' and 'mistake' for now, BUT the user requested hints capability.
-  // If I auto-solve, hints are redundant.
-  // Let's CHANGE to manual solve trigger OR show hints alongside.
-  // Actually, for custom solution view, usually user wants the answer.
-  // But to support the feature request "For every question...", I should probably NOT auto-solve immediately, 
-  // or allow hiding the solution?
   // Let's auto-solve by default (as it was) but maybe collapse it or allow hints before?
   // No, if I auto-solve, the API cost is incurred and text is shown.
   // Let's change to: Show question, then ask "Get Solution" or "Get Hint".
@@ -145,8 +140,8 @@ export function CustomSolutionView({ text, imageFile, mode, onBack }: CustomSolu
         </h3>
       </div>
       
-      <div className="p-6 bg-slate-50 dark:bg-slate-700/30 rounded-lg space-y-4">
-        {text && <p className="text-lg font-medium text-slate-800 dark:text-slate-200">{text}</p>}
+      <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 space-y-4">
+        {text && <QuestionTextContent content={text} />}
         {previewUrl && (
             <img src={previewUrl} alt="Your question" className="max-h-64 rounded-lg border border-slate-200 dark:border-slate-600" />
         )}

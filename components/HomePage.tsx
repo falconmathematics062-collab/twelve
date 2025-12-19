@@ -39,7 +39,7 @@ export function HomePage({ textbooks, onChapterSelect, title, buttonText }: Home
               <button 
                 key={chapter.chapter_number}
                 onClick={() => onChapterSelect(chapter)}
-                className="group relative w-full aspect-square max-w-[280px] bg-slate-50 dark:bg-slate-800/80 rounded-full shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center p-2 sm:p-6 border-4 border-white dark:border-slate-700 hover:border-blue-500 dark:hover:border-pink-500 text-center overflow-hidden"
+                className="group relative w-full aspect-square max-w-[280px] bg-slate-50 dark:bg-slate-800/80 rounded-full shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center p-2 sm:p-6 border-4 border-white dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-500 text-center overflow-hidden"
               >
                 {/* Floating Symbols Background Inside Button */}
                 <div className="absolute inset-0 pointer-events-none opacity-20">
@@ -60,7 +60,7 @@ export function HomePage({ textbooks, onChapterSelect, title, buttonText }: Home
                 </div>
 
                 <div className="flex flex-col items-center justify-center h-full w-full relative z-10">
-                    <span className={`text-xs font-bold uppercase tracking-wider mb-2 transition-colors ${chapter.chapter_number === '0' ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-pink-500'}`}>
+                    <span className={`text-xs font-bold uppercase tracking-wider mb-2 transition-colors ${chapter.chapter_number === '0' ? 'text-amber-500 dark:text-amber-400' : 'text-slate-400 dark:text-slate-500 group-hover:text-blue-500 dark:group-hover:text-blue-500'}`}>
                         {chapter.chapter_number === '0' ? 'Quick Reference' : `Chapter ${chapter.chapter_number}`}
                     </span>
                     
@@ -68,7 +68,7 @@ export function HomePage({ textbooks, onChapterSelect, title, buttonText }: Home
                     {chapter.chapter_title}
                     </h3>
                     
-                    <div className="mt-3 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-blue-600 dark:text-pink-400">
+                    <div className="mt-3 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 text-blue-600 dark:text-blue-400">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
                             <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm4.28 10.28a.75.75 0 000-1.06l-3-3a.75.75 0 10-1.06 1.06l1.72 1.72H8.25a.75.75 0 000 1.5h5.69l-1.72 1.72a.75.75 0 101.06 1.06l3-3z" clipRule="evenodd" />
                         </svg>

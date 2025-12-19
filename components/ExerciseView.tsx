@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { SolutionDisplay } from './SolutionDisplay';
 import { solveTextProblemStream, getHintStream } from '../services/geminiService';
+import { QuestionTextContent } from './QuestionTextContent'; // New import
 
 interface ExerciseViewProps {
   chapter: any;
@@ -89,10 +90,8 @@ export function ExerciseView({ chapter, exercise, onBack }: ExerciseViewProps): 
         </h3>
       </div>
       
-      <div className="p-6 bg-slate-50 dark:bg-slate-700/30 rounded-lg prose prose-slate dark:prose-invert max-w-none">
-        <ReactMarkdown>
-          {exercise.text}
-        </ReactMarkdown>
+      <div className="p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 prose prose-slate dark:prose-invert max-w-none">
+        <QuestionTextContent content={exercise.text} />
       </div>
 
       {/* Hint Buttons */}
