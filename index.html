@@ -12,14 +12,31 @@
       }
     </script>
     <style>
-      /* Hide scrollbar for Chrome, Safari and Opera */
+      /* Hide scrollbar */
       ::-webkit-scrollbar {
         display: none;
       }
-      /* Hide scrollbar for IE, Edge and Firefox */
       html, body {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      /* Monospaced blocks for arithmetic/textbook alignment */
+      pre, code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      }
+      pre {
+        background-color: #f8fafc;
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        margin: 1.5rem 0;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+        line-height: 1.4;
+      }
+      .dark pre {
+        background-color: #0f172a;
+        color: #e2e8f0;
+        border-color: #1e293b;
       }
     </style>
   <script type="importmap">
@@ -28,7 +45,7 @@
     "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
     "react/": "https://aistudiocdn.com/react@^19.2.1/",
     "react": "https://aistudiocdn.com/react@^19.2.1",
-    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "react-markdown": "https://esm.sh/react-markdown@^10.0.0",
     "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
     "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
     "vite": "https://esm.sh/vite@^7.2.7",
