@@ -37,9 +37,9 @@ STRICT RULES:
 5. DERIVATIVES: Use dy/dx or d/dx(f(x)).
 6. FRACTIONS: Use (a/b) for inline, or clear multi-line layouts for complex expressions.
 7. HEADINGS: Use ### for "Step 1", "Step 2", etc.
-8. SINGLE-VALUE ANSWERS (CRITICAL): When presenting a single number or short textual answer (e.g., the number of rows, or the value of an element), embed it directly into the narrative text or a clear bullet point using **bold markdown**, instead of trying to create a table or a separate "Value:" field.
-   Example: "The number of rows (m) is **3**." or "The element a₁₃ is **19**."
-9. TONE: Professional, minimalist, and clear, like a good textbook.
+8. SINGLE-VALUE ANSWERS (CRITICAL): When presenting a single number or short textual answer (e.g., the number of rows, or the value of an element), embed it directly into the narrative text or a clear bullet point using **bold markdown**. Do NOT use tables, columns, or separate "Value:" lines. For instance, write "The number of rows (m) is **3**." or "The element a₁₃ is **19**."
+9. NO VISUAL CLUTTER (CRITICAL): Absolutely AVOID single dots ('.') as separators, excessive blank lines, or empty "columns" that do not convey meaningful structural information. The solution flow should be tight and direct.
+10. TONE: Professional, minimalist, and clear, like a good textbook.
 `;
 
 /**
@@ -64,8 +64,8 @@ export async function* solveTextProblemStream(problem: any, chapterContext: any)
     const primaryPrompt = `Solve this step-by-step, formatted as a textbook solution for average students using only plain text and Unicode. No LaTeX. 
     Chapter ${chapterContext.number} ${chapterContext.title}, Q${problem.id}: ${problem.text}.
     
-    When a matrix is explicitly mentioned in the problem, display it immediately in a properly formatted matrix code block in the solution.
-    For matrix identification questions, explicitly state all calculated values (rows, columns, number of elements) and for each requested element (e.g., a13: 19) directly within the narrative, using bold for the final values. Ensure clear and complete formatting within markdown. Each step must be self-contained and provide all necessary information.`;
+    When the problem statement refers to a matrix (like "matrix A = [ ... ]"), display the full matrix in a properly formatted matrix code block at the beginning of the solution's relevant section.
+    For matrix identification questions, explicitly state all calculated values (rows, columns, number of elements) and for each requested element (e.g., a13) directly within the narrative, using bold for the final values. Ensure clear and complete formatting within markdown. Each step must be self-contained and provide all necessary information, without any empty lines or single dots acting as separators.`;
     const rawResponse = await ai.models.generateContent({ model, contents: `${FORMATTING_AI_INSTRUCTIONS}\n\n${primaryPrompt}` });
     const chunks = (rawResponse.text || "").split(' ');
     for (const chunk of chunks) {

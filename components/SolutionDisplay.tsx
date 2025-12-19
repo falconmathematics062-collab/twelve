@@ -55,12 +55,7 @@ export function SolutionDisplay({ isLoading, solution, error }: SolutionDisplayP
                 h1: ({node, ...props}) => <h1 className="text-blue-700 dark:text-blue-300 font-bold text-2xl mt-6 mb-4" {...props} />,
                 h2: ({node, ...props}) => <h2 className="text-blue-700 dark:text-blue-300 font-bold text-xl mt-5 mb-3" {...props} />,
                 h3: ({node, ...props}) => <h3 className="text-blue-600 dark:text-blue-500 font-extrabold text-lg mt-4 mb-2 !leading-normal" {...props} />,
-                strong: ({node, ...props}) => (
-                  <strong 
-                    className="bg-blue-50 dark:bg-blue-900/40 text-blue-900 dark:text-blue-100 border border-blue-100 dark:border-blue-800 px-3 py-2 rounded-md block w-full my-4 not-italic font-bold shadow-sm" 
-                    {...props} 
-                  />
-                ),
+                // Removed custom styling for strong tags
                 code: ({node, ...props}) => <code className="bg-slate-100 dark:bg-slate-900 px-1 rounded text-blue-600 dark:text-blue-400 text-sm" {...props} />,
                 pre: ({node, ...props}) => <pre className="font-mono text-base leading-tight bg-slate-50 dark:bg-slate-950 p-4 rounded-lg overflow-x-auto border border-slate-200 dark:border-slate-800" {...props} />, // Increased font-size for better readability
                 table: ({node, ...props}) => (
